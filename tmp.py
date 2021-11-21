@@ -1,51 +1,37 @@
 import sys
-from PySide6.QtWidgets import (QLineEdit, QPushButton, QApplication, QLabel,
-    QHBoxLayout, QRadioButton, QVBoxLayout, QDialog, QWidget, QListWidget, QListWidgetItem,
-     QButtonGroup, QBoxLayout, QMainWindow, QGroupBox, QGridLayout
-    )
-from PySide6.QtCore import Qt
+import random
+from PySide6.QtWidgets import (QApplication, QLabel, QPushButton,
+                               QVBoxLayout, QWidget)
+from PySide6.QtCore import Slot, Qt
 
-class Window(QWidget):
-    def __init__(self, parent=None):
-        super(Window, self).__init__(parent)
-        grid:QGridLayout = QGridLayout()
-        grid.addWidget(self.createFirstExclusiveGroup(), 0, 0);
-        # grid->addWidget(createSecondExclusiveGroup(), 1, 0);
-        # grid->addWidget(createNonExclusiveGroup(), 0, 1);
-        # grid->addWidget(createPushButtonGroup(), 1, 1);
-        self.setLayout(grid);
+class MyWidget(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
 
-        self.setWindowTitle("Group Boxes");
-        self.resize(480, 320);
+        self.hello = ["Hallo Welt", "你好，世界", "Hei maailma",
+            "Hola Mundo", "Привет мир"]
 
-    def createFirstExclusiveGroup(self) -> QGroupBox:
-        groupBox:QGroupBox = QGroupBox("Exclusive Radio Buttons");
+        self.button = QPushButton("Click me!")
+        self.text = QLabel("Hello World")
+        self.text.setAlignment(Qt.AlignCenter)
 
-        radio1:QRadioButton = QRadioButton("&Radio button 1");
-        radio2:QRadioButton = QRadioButton("R&adio button 2");
-        radio3:QRadioButton = QRadioButton("Ra&dio button 3");
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.text)
+        self.layout.addWidget(self.button)
+        self.setLayout(self.layout)
 
-        radio1.setChecked(True);
+        # Connecting the signal
+        self.button.clicked.connect(self.magic)
 
-        vbox:QVBoxLayout = QVBoxLayout();
-        vbox.addWidget(radio1);
-        vbox.addWidget(radio2);
-        vbox.addWidget(radio3);
-        vbox.addStretch(1);
-        
-        groupBox.setLayout(vbox);
-        
-        return groupBox
-
+    @Slot()
+    def magic(self):
+        self.text.setText(random.choice(self.hello))
 
 if __name__ == "__main__":
-    app = QApplication()
+    app = QApplication(sys.argv)
 
-    w = Window()
-    w.show()
-
-    with open("style.qss", "r") as f:
-        _style = f.read()
-        app.setStyleSheet(_style)
+    widget = MyWidget()
+    widget.resize(800, 600)
+    widget.show()
 
     sys.exit(app.exec())

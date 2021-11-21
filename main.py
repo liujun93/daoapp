@@ -5,7 +5,10 @@ from PySide6.QtWidgets import (QLineEdit, QPushButton, QApplication, QLabel,
      QFrame, QSizePolicy, QComboBox
     )
 from PySide6.QtCore import Qt
-from utils import zhongyao, yijing
+from PySide6.QtGui import QFontDatabase
+
+# QFontDatabase.addApplicationFontFromData(open('Arial Unicode.ttf', 'rb').read())
+from utils import zhongyao, yijing, add_p, set_font
 import re
 import warnings
 from collections import deque
@@ -14,6 +17,7 @@ warnings.filterwarnings('ignore')
 
 zhongyao_example = '草 | 血痹'
 yijing_example = '坎 | 010 | 010010'
+# yijing_example = '010010'
 hist_max = 50
 
 class Window(QWidget):
@@ -50,7 +54,8 @@ class Window(QWidget):
         grid.setColumnStretch(1, 4)
         self.setLayout(grid);
 
-        self.setWindowTitle("中华传统词典");
+        self.setWindowTitle("道·词典");
+        # self.setWindowTitle("有趣的搜索万里挑一");
         self.resize(700, 500);
 
         self.search_history = deque(maxlen=hist_max)
@@ -132,7 +137,7 @@ class Window(QWidget):
                             zhongyao[zhongyao['神农本草经文'].str.contains(text)].values.tolist() + \
                             zhongyao[zhongyao['功效与主治'].str.contains(text)].values.tolist()
                 for pinglei, leixing, name, xingwei, shennong, gongxiao in item_list:
-                    show_list.append((name, '\n\n'.join([f'【{leixing}】{name}', f'【{pinglei}】神农本草经\n\n{xingwei}{shennong}', f'【主治与功效】\n\n{gongxiao}'])))
+                    show_list.append((name, ''.join(map(add_p, [f'【{leixing}】{name}', f'【{pinglei}】神农本草经', f'{xingwei}{shennong}', f'【功能主治】', f'{gongxiao}']))))
             elif searchField == '易经':
                 if re.match(r'[01]{6,7}', text):
                     item_list = yijing[yijing['二进制卦'] == text].values.tolist()
@@ -143,11 +148,13 @@ class Window(QWidget):
                 else:
                     item_list = yijing[yijing['名称'].str.contains(text)].values.tolist()
 
-                for idx, tp, name, pinyin, bina, img_disc, img, tuan in item_list:
+                for idx, tp, name, pinyin, bina, img_disc, img, xiangci, guaci, tuanci, tuanci2 in item_list:
                     if tp == '六十四卦':
-                        show_list.append((f'[64卦]{name}', '\n\n'.join([f'{idx}', f'[ {pinyin} ]', f'{name}', bina, f'<span style=”font-size:20px”>{img}</span>', img_disc, f'【彖辞】\n\n{tuan}'])))
+                        show_list.append((f'[{idx}/64]{name}', ''.join(map(add_p, 
+                        [f'第{idx}卦', set_font(f'[ {pinyin} ] ', 15), f'{set_font(name, 30)}「{img_disc}」', set_font(img, 60) + bina, 
+                        f'【象辞】 {xiangci}', f'【卦辞】 {guaci}', f'【彖辞】 {tuanci2}']))))
                     elif tp == '八卦':
-                        show_list.append((f'[8卦]{name}', '\n\n'.join([f'{idx}', f'[ {pinyin} ]', f'{name}', bina, img])))
+                        show_list.append((f'[{idx}/8]{name}', ''.join(map(add_p, [f'第{idx}卦', set_font(f'[ {pinyin} ] ', 15), f'{set_font(name, 30)}', set_font(img, 60) + bina]))))
 
             for j, (name, content) in enumerate(show_list):
                 radio:QRadioButton = QRadioButton(name);
@@ -164,7 +171,7 @@ class Window(QWidget):
 
     def changeResultContent(self, content):
         def tmp():
-            self.searchResultContent.setText(content)
+            self.searchResultContent.setHtml(content)
         return tmp
 
     def onComboBoxChanged(self, searchField):

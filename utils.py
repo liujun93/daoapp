@@ -8,3 +8,9 @@ data = {
 }
 
 
+def add_p(s):
+    return '<p>' + s + '</p>'
+
+def set_font(s, size):
+    return f'<span style="font-size:{size}px">' + s + '</span>'
+    # return f'<span style="font-size:{size}px;font-family:Arial Unicode">' + s + '</span>'
